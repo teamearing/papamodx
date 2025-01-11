@@ -31,38 +31,6 @@
             animation: fadeIn 1.5s ease-out;
         }
 
-        /* Animated Danger Rings */
-        .danger-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 450px;
-            height: 450px;
-            background: transparent;
-            border: 2px solid rgba(255, 0, 0, 0.5);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-
-        .danger-ring:nth-child(2) {
-            width: 550px;
-            height: 550px;
-            animation-delay: 0.5s;
-        }
-
-        /* Title */
-        .title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #ff0000;
-            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff4444;
-            margin-bottom: 30px;
-            animation: flicker 2s infinite;
-        }
-
-        /* Buttons */
         .button {
             display: inline-block;
             width: 100%;
@@ -78,7 +46,11 @@
             text-shadow: 0 0 10px #ff0000;
             box-shadow: 0 0 20px #ff0000;
             transition: 0.3s;
-            animation: glow 1.5s infinite alternate;
+        }
+
+        .button.telegram {
+            background: linear-gradient(45deg, #0088cc, #005f99);
+            margin-top: 30px;
         }
 
         .button:hover {
@@ -86,60 +58,18 @@
             box-shadow: 0 0 40px #ff4444;
         }
 
-        /* Subtext */
+        .button.telegram:hover {
+            background: linear-gradient(45deg, #00aaff, #0077cc);
+        }
+
         .subtext {
             margin-top: 10px;
             font-size: 14px;
             color: #ff8888;
-            animation: flicker 2s infinite;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1.2);
-                opacity: 0;
-            }
-        }
-
-        @keyframes flicker {
-            0%, 18%, 22%, 25%, 53%, 57%, 100% {
-                opacity: 1;
-            }
-            20%, 24%, 55% {
-                opacity: 0.4;
-            }
-        }
-
-        @keyframes glow {
-            from {
-                box-shadow: 0 0 20px #ff0000;
-            }
-            to {
-                box-shadow: 0 0 40px #ff0000, 0 0 80px #ff4444;
-            }
         }
     </style>
 </head>
 <body>
-    <div class="danger-ring"></div>
-    <div class="danger-ring"></div>
-
     <div class="container">
         <!-- Title -->
         <div class="title">CHOOSE THE SERVER</div>
@@ -147,6 +77,7 @@
         <!-- Buttons -->
         <button class="button" id="numberButton">NUMBER</button>
         <button class="button" id="sizeButton">BIG/SMALL</button>
+        <button class="button telegram" id="telegramButton">TELEGRAM</button>
 
         <!-- Subtext -->
         <div class="subtext">Choose your destiny wisely...</div>
@@ -161,6 +92,13 @@
         // Redirect to Size Page
         document.getElementById('sizeButton').addEventListener('click', () => {
             window.location.href = 'size.html';
+        });
+
+        // Decode and redirect to Telegram link
+        document.getElementById('telegramButton').addEventListener('click', () => {
+            const encodedLink = 'aHR0cHM6Ly90Lm1lLys3cEZDbkRKY3FsTTVOVGRs';
+            const decodedLink = atob(encodedLink);
+            window.open(decodedLink, '_blank');
         });
     </script>
 </body>
