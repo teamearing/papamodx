@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NUMBER</title>
+  <style>
+    /* General styles for a hacker theme */
+    body {
+      background-color: #111;
+      color: #00FF00;
+      font-family: 'Courier New', Courier, monospace;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1, h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin: 20px;
+    }
+
+    #game-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 30px;
+      padding: 10px;
+    }
+
+    #timer {
+      font-size: 3rem;
+      font-weight: bold;
+      margin-left: 20px;
+    }
+
+    #history-list {
+      width: 100%;
+      max-width: 900px;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    #history-list th, #history-list td {
+      border: 2px solid #00FF00;
+      padding: 15px;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+
+    #history-list th {
+      background-color: #333;
+    }
+
+    #history-list td {
+      background-color: #222;
+    }
+
+    #prediction {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      h1, h2 {
+        font-size: 1.5rem;
+      }
+
+      #game-info {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      #timer {
+        margin-left: 0;
+        font-size: 2rem;
+      }
+
+      #history-list th, #history-list td {
+        font-size: 1rem;
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1, h2 {
+        font-size: 1.2rem;
+      }
+
+      #game-info {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      #timer {
+        margin-left: 0;
+        font-size: 1.5rem;
+      }
+
+      #history-list th, #history-list td {
+        font-size: 0.9rem;
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div>
+    <h1>NUMBER MOD OF VPRO</h1>
+    
+    <div id="game-info">
+      <div>
+        <strong>Period Number:</strong> <span id="period-number">Loading...</span>
+      </div>
+      <div id="timer">
+        <span id="minutes">00</span>:<span id="seconds">00</span>
+      </div>
+    </div>
+
+    <h2>Previous Results</h2>
+    <table id="history-list">
+      <thead>
+        <tr>
+          <th>Period Number</th>
+          <th>Number</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- History rows will be inserted here dynamically -->
+      </tbody>
+    </table>
+
+    <div id="prediction">
+      <strong>Prediction:</strong> Loading...
+    </div>
+  </div>
+
+  <script>
+    let historyData = [];  // Store last 10 predictions for analysis
+
+    async function fetchCurrentGameIssue() {
+      const apiUrl = 'https://api.bdg88zf.com/api/webapi/GetGameIssue';
+      const requestData = {
+        "typeId": 1,
+        "language": 0,
+        "random": "40079dcba93a48769c6ee9d4d4fae23f",
+        "signature": "D12108C4F57C549D82B23A91E0FA20AE",
+        "timestamp": 1727792520
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            'Accept': 'application/json, text/plain, */*'
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.code === 0) {
+            updateTimer(data.data);
+          } else {
+            console.error('Failed to fetch game issue:', data.msg);
+          }
+        } else {
+          console.error('Network response was not ok:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    }
+
+    function updateTimer(data) {
+      const periodNumber = document.getElementById('period-number');
+      periodNumber.textContent = data.issueNumber;
+
+      const endTime = new Date(data.endTime).getTime();
+      const interval = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = endTime - now;
+
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById('minutes').textContent = minutes < 10 ? '0' + minutes : minutes;
+        document.getElementById('seconds').textContent = seconds < 10 ? '0' + seconds : seconds;
+
+        if (distance < 0) {
+          clearInterval(interval);
+          document.getElementById('minutes').textContent = "00";
+          document.getElementById('seconds').textContent = "00";
+        
+          fetchCurrentGameIssue();
+          fetchPreviousResults();   
+        }
+      }, 1000);
+    }
+
+    async function fetchPreviousResults() {
+      const apiUrl = 'https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList';
+      const requestData = {
+        "pageSize": 10,
+        "pageNo": 1,
+        "typeId": 1,
+        "language": 0,
+        "random": "c2505d9138da4e3780b2c2b34f2fb789",
+        "signature": "7D637E060DA35C0C6E28DC6D23D71BED",
+        "timestamp": 1727792520
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            'Accept': 'application/json, text/plain, */*'
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.code === 0) {
+            updatePreviousResults(data.data.list);
+          } else {
+            console.error('Failed to fetch previous results:', data.msg);
+          }
+        } else {
+          console.error('Network response was not ok:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    }
+
+    function updatePreviousResults(resultList) {
+      const historyTable = document.getElementById('history-list').querySelector('tbody');
+      historyTable.innerHTML = '';  // Clear the table before adding new rows
+
+      historyData = resultList.slice(0, 10); // Save only the last 10 results for prediction analysis
+      resultList.forEach(result => {
+        const { issueNumber, number } = result;
+
+        const row = document.createElement('tr');
+
+        // Period Number Cell
+        const issueCell = document.createElement('td');
+        issueCell.textContent = issueNumber;
+        row.appendChild(issueCell);
+
+        // Number Cell
+        const numberCell = document.createElement('td');
+        numberCell.textContent = number;
+        row.appendChild(numberCell);
+
+        // Append the row to the table
+        historyTable.appendChild(row);
+      });
+
+      // After updating the history, generate the prediction
+      generatePrediction();
+    }
+
+    function generatePrediction() {
+      // Count frequency of each number in the last 10 results
+      const frequency = {};
+      historyData.forEach(result => {
+        const number = result.number;
+        frequency[number] = (frequency[number] || 0) + 1;
+      });
+
+      // Sort numbers by frequency and get the top 3
+      const sortedNumbers = Object.keys(frequency)
+        .sort((a, b) => frequency[b] - frequency[a])
+        .slice(0, 3);
+
+      // Display the prediction
+      const prediction = document.getElementById('prediction');
+      prediction.textContent = `Prediction: BET ON ${sortedNumbers.join(' | ')}`;
+    }
+
+    fetchCurrentGameIssue();
+    fetchPreviousResults();
+    setInterval(fetchPreviousResults, 60000); // Refresh the results every minute
+  </script>
+
+</body>
+</html>
